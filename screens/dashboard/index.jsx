@@ -1,13 +1,35 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Text, View, Image, Dimensions, Pressable, ImageBackground, } from "react-native";
 import _BarChart from "../../components/chart";
 import icon from '../../assets/user-icon.png'
+import loadingScreen from "../../components/loading";
 import background from '../../assets/image.png'
 import PinpointIcon from "../../components/pinpoint_icon";
 import styles from "./styles";
+import { getAllTrash } from "../../api";
 import { LinearGradient } from "expo-linear-gradient";
+import LoadingScreen from "../../components/loading";
 export default function Dashboard({navigation}) {
-
+    const [trash, setTrash] = useState([])
+    const [isLoading, setIsLoading] = useState(true)
+    useEffect(()=>{
+        const fetchTrash = async () => {
+            await getAllTrash().then(data => {
+                setTrash(data)
+            }).catch(error => {
+                console.log(error)
+            }).finally(()=>{
+                setIsLoading(false);
+            })
+        }
+        fetchTrash()
+    },[])
+    
+    if (isLoading){
+        return(
+            <LoadingScreen/>
+        )
+    }
     return (
         <View style={styles.main}>
             <View style={styles.background}>
@@ -34,7 +56,7 @@ export default function Dashboard({navigation}) {
                                 end={{ x: 0, y: 1 }}>
                                 <PinpointIcon />
                                 <View style={styles.dataViewTitle}>
-                                    <Text style={styles.subtitle}>Lixo arrecadado total</Text>
+                                    <Text style={styles.subtitle}>Lixo arrecadado na coleta atual</Text>
                                     <Text style={styles.numberDisplay}>20kgs</Text>
                                 </View>
                             </LinearGradient>
@@ -46,7 +68,7 @@ export default function Dashboard({navigation}) {
                                 <PinpointIcon />
                                 <View style={styles.dataViewTitle}>
                                     <Text style={styles.subtitle}>Lixo arrecadado na última coleta</Text>
-                                    <Text style={styles.numberDisplay}>10kgs</Text>
+                                    <Text style={styles.numberDisplay}>{trash[trash.length - 1].weight}kg </Text>
                                 </View>
                             </LinearGradient>
                             <Pressable title='Receber Lixo' style={styles.button} onPress={() => navigation.navigate('dataSender')}>
